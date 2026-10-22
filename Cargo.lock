@@ -1068,7 +1068,7 @@ checksum = "7a2ae44ef20feb57a68b23d846850f861394c2e02dc425a50098ae8c90267589"
 
 [[package]]
 name = "sloth_clash_service_ipc"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "anyhow",
  "clash_verge_logger",
@@ -1091,6 +1091,7 @@ dependencies = [
  "tracing-log",
  "tracing-subscriber",
  "windows-service",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

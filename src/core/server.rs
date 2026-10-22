@@ -2,6 +2,7 @@ use super::state::IpcState;
 use crate::core::auth::ipc_request_context_to_auth_context;
 use crate::core::logger::set_or_update_writer;
 use crate::core::manager::{CORE_MANAGER, LOGGER_MANAGER};
+use crate::core::killswitch::KillSwitchRequest;
 use crate::core::structure::{CorpEnsureDriverRequest, CorpVpnStartRequest, Response};
 use crate::{ClashConfig, IpcCommand, VERSION, WriterConfig};
 use http::StatusCode;
@@ -449,6 +450,26 @@ fn create_ipc_router() -> Result<Router> {
                 .json(&json_value)?
                 .build())
         })
+        .put(IpcCommand::KillSwitch.as_ref(), |ctx| async move {
+            trace!("Received KillSwitch enable command");
+            ipc_request_context_to_auth_context(&ctx)?;
+            match ctx.json::<KillSwitchRequest>() {
+                Ok(req) => Ok(killswitch_response(super::killswitch::enable(req).await)?),
+                Err(e) => Ok(HttpResponse::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .text(format!("Invalid JSON: {e}"))
+                    .build()),
+            }
+        })
+        .delete(IpcCommand::KillSwitch.as_ref(), |ctx| async move {
+            trace!("Received KillSwitch disable command");
+            ipc_request_context_to_auth_context(&ctx)?;
+            killswitch_response(super::killswitch::disable().await)
+        })
+        .get(IpcCommand::KillSwitch.as_ref(), |ctx| async move {
+            ipc_request_context_to_auth_context(&ctx)?;
+            killswitch_response(Ok(super::killswitch::status().await))
+        })
         .post(IpcCommand::StartCorpVpn.as_ref(), |ctx| async move {
             trace!("Received StartCorpVpn command");
             ipc_request_context_to_auth_context(&ctx)?;
@@ -531,4 +552,30 @@ fn create_ipc_router() -> Result<Router> {
             }
         });
     Ok(router)
+}
+
+fn killswitch_response(
+    result: anyhow::Result<super::killswitch::KillSwitchStatus>,
+) -> Result<HttpResponse> {
+    Ok(match result {
+        Ok(status) => HttpResponse::builder()
+            .status(StatusCode::OK)
+            .json(&Response {
+                code: 0,
+                message: "Success".to_string(),
+                data: Some(status),
+            })?
+            .build(),
+        Err(e) => {
+            tracing::warn!("kill switch: {e}");
+            HttpResponse::builder()
+                .status(StatusCode::SERVICE_UNAVAILABLE)
+                .json(&Response::<()> {
+                    code: 1,
+                    message: format!("kill switch: {e}"),
+                    data: None,
+                })?
+                .build()
+        }
+    })
 }

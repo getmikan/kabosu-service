@@ -139,6 +139,7 @@ impl CoreManager {
             "config file",
         )?;
         let core_path = core_path.to_string_lossy().into_owned();
+        crate::core::killswitch::remember_core_path(&core_path).await;
 
         let args = vec![
             "-d",

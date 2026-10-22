@@ -1,6 +1,6 @@
 [package]
 name = "sloth_clash_service_ipc"
-version = "2.5.0"
+version = "2.6.0"
 edition = "2024"
 authors = ["Tunglies"]
 license = "GPL-3.0"
@@ -52,6 +52,7 @@ standalone = [
     "dep:nix",
     "compact_str",
     "sha2",
+    "dep:windows-sys",
 ]
 client = [
     "kode-bridge/client",
@@ -105,6 +106,14 @@ nix = { version = "0.31", features = ["user"], optional = true }
 
 [target.'cfg(windows)'.dependencies]
 platform_lib = { package = "windows-service", version = "0.8", optional = true }
+windows-sys = { version = "0.61", optional = true, features = [
+    "Win32_Foundation",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_NetworkManagement_WindowsFilteringPlatform",
+    "Win32_Security",
+    "Win32_System_Rpc",
+] }
 
 [dev-dependencies]
 kode-bridge = { version = "0.3.4", default-features = false, features = [

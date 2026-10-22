@@ -43,6 +43,13 @@ pub enum IpcCommand {
     // component it unpacked. No-op on non-Windows (native tun needs no driver).
     #[strum(serialize = "/corp/ensure-driver")]
     EnsureCorpDriver,
+    // Kill switch (leak protection): block every outbound connection that does
+    // not go through the VPN — loopback, the trusted core binary, the TUN
+    // adapter, DHCP and optionally the LAN stay allowed. PUT enables or
+    // rebinds (new TUN adapter), DELETE disables, GET reports the state.
+    // Windows (WFP, dynamic session) first.
+    #[strum(serialize = "/killswitch")]
+    KillSwitch,
     #[strum(serialize = "/writer")]
     UpdateWriter,
     #[strum(serialize = "/magic")]

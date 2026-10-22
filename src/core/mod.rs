@@ -20,6 +20,8 @@ mod state;
 mod tun_cleanup;
 #[cfg(feature = "standalone")]
 mod corp_vpn;
+#[cfg(feature = "standalone")]
+pub mod killswitch;
 
 #[cfg(feature = "standalone")]
 pub use server::{run_ipc_server, stop_ipc_server};
